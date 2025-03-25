@@ -33,10 +33,9 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({ success: true })
     response.cookies.set("admin_session", "true", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       maxAge: 60 * 60,
       path: "/",
-      domain: "192.168.1.3:3000",
     })
 
     return response
