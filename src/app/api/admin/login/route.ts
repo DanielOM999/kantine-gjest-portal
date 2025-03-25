@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60,
       path: "/",
+      domain: "192.168.1.3",
     })
 
     return response
