@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { db } from "@/src/lib/db"
 
+const baseUrl = 'http://192.168.1.100';
+
 const getClientIp = (request: NextRequest): string => {
   // For reverse proxy setups
   const forwardedFor = request.headers.get('x-forwarded-for')
@@ -68,7 +70,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.redirect(new URL("/success", request.url))
+    return NextResponse.redirect(new URL("/success", baseUrl))
   } catch (error) {
     console.error("Registration error:", error)
     return NextResponse.json(
