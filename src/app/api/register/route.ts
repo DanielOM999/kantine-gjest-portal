@@ -18,20 +18,13 @@ const validatePhoneNumber = (rawPhone: string): string | null => {
 }
 export async function POST(request: NextRequest) {
   try {
-    // First parse URL parameters from request URL
-    const url = new URL(request.url)
-    const searchParams = new URLSearchParams(url.search)
-    
-    // Get parameters from BOTH URL and form data
     const formData = await request.formData()
     
-    // Extract parameters from URL
-    const clientMac = searchParams.get('client_mac')
-    const gateway = searchParams.get('gateway')
-    const authToken = searchParams.get('auth_token')
-    const redir = searchParams.get('redir')
-
-    // Extract form data
+    // Extract parameters from FORM DATA only
+    const clientMac = formData.get("client_mac")?.toString()
+    const gateway = formData.get("gateway")?.toString()
+    const authToken = formData.get("auth_token")?.toString()
+    const redir = formData.get("redir")?.toString()
     const name = formData.get("name")?.toString().trim() || ''
     const rawPhone = formData.get("phone")?.toString() || ''
 
@@ -64,6 +57,7 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request)
     console.log(`New registration from ${ip}: ${name} (${cleanPhone})`)
 
+
     const existingUser = await db.query(
       "SELECT * FROM users WHERE phone = $1", 
       [cleanPhone]
@@ -85,13 +79,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const gatewayWithPort = gateway.includes(':') ? gateway : `${gateway}:2050`
     const ndsAuthUrl = new URL(
-      "/nds/auth",
-      gateway.startsWith('http') ? gateway : `http://${gateway}`
+      `/nds/auth?token=${authToken}&client_mac=${encodeURIComponent(clientMac)}`,
+      `http://${gatewayWithPort}`
     )
     
-    ndsAuthUrl.searchParams.append('token', authToken)
-    ndsAuthUrl.searchParams.append('client_mac', clientMac)
     if (redir) ndsAuthUrl.searchParams.append('redir', redir)
 
     return NextResponse.redirect(ndsAuthUrl.toString())
