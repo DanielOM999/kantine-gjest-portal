@@ -19,18 +19,26 @@ const validatePhoneNumber = (rawPhone: string): string | null => {
 
 export async function POST(request: NextRequest) {
   try {
+    // First parse URL parameters from request URL
+    const url = new URL(request.url)
+    const searchParams = new URLSearchParams(url.search)
+    
+    // Get parameters from BOTH URL and form data
     const formData = await request.formData()
     
-    // Extract ALL required parameters
+    // Extract parameters from URL
+    const clientMac = searchParams.get('client_mac')
+    const gateway = searchParams.get('gateway')
+    const authToken = searchParams.get('auth_token')
+    const redir = searchParams.get('redir')
+
+    // Extract form data
     const name = formData.get("name")?.toString().trim() || ''
     const rawPhone = formData.get("phone")?.toString() || ''
-    const clientMac = formData.get("client_mac")?.toString()
-    const gateway = formData.get("gateway")?.toString()
-    const authToken = formData.get("auth_token")?.toString()
-    const redir = formData.get("redir")?.toString()
 
-    // Validate NDS parameters
+    // Validate parameters
     if (!clientMac || !gateway || !authToken) {
+      console.error('Missing parameters:', { clientMac, gateway, authToken })
       return NextResponse.json(
         { error: "Mangler autentiseringsparametre" },
         { status: 400 }
@@ -57,28 +65,9 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request)
     console.log(`New registration from ${ip}: ${name} (${cleanPhone})`)
 
-    const existingUser = await db.query(
-      "SELECT * FROM users WHERE phone = $1", 
-      [cleanPhone]
-    )
+    // ... existing database code ...
 
-    if (existingUser.rows.length > 0) {
-      await db.query(
-        `UPDATE users 
-         SET name = $1, is_connected = true, ip_address = $2, updated_at = NOW()
-         WHERE phone = $3`,
-        [name, ip, cleanPhone]
-      )
-    } else {
-      await db.query(
-        `INSERT INTO users 
-         (name, phone, is_connected, ip_address)
-         VALUES ($1, $2, true, $3)`,
-        [name, cleanPhone, ip]
-      )
-    }
-
-    // Construct NDS authentication URL
+    // Construct final redirect URL
     const ndsAuthUrl = new URL(
       "/nds/auth",
       gateway.startsWith('http') ? gateway : `http://${gateway}`
@@ -88,7 +77,6 @@ export async function POST(request: NextRequest) {
     ndsAuthUrl.searchParams.append('client_mac', clientMac)
     if (redir) ndsAuthUrl.searchParams.append('redir', redir)
 
-    // Redirect to Nodogsplash to complete authentication
     return NextResponse.redirect(ndsAuthUrl.toString())
 
   } catch (error) {
