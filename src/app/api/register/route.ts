@@ -16,7 +16,6 @@ const validatePhoneNumber = (rawPhone: string): string | null => {
   const cleaned = rawPhone.replace(/\D/g, '')
   return cleaned.length === 8 ? cleaned : null
 }
-
 export async function POST(request: NextRequest) {
   try {
     // First parse URL parameters from request URL
@@ -65,9 +64,27 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request)
     console.log(`New registration from ${ip}: ${name} (${cleanPhone})`)
 
-    // ... existing database code ...
+    const existingUser = await db.query(
+      "SELECT * FROM users WHERE phone = $1", 
+      [cleanPhone]
+    )
 
-    // Construct final redirect URL
+    if (existingUser.rows.length > 0) {
+      await db.query(
+        `UPDATE users 
+         SET name = $1, is_connected = true, ip_address = $2, updated_at = NOW()
+         WHERE phone = $3`,
+        [name, ip, cleanPhone]
+      )
+    } else {
+      await db.query(
+        `INSERT INTO users 
+         (name, phone, is_connected, ip_address)
+         VALUES ($1, $2, true, $3)`,
+        [name, cleanPhone, ip]
+      )
+    }
+
     const ndsAuthUrl = new URL(
       "/nds/auth",
       gateway.startsWith('http') ? gateway : `http://${gateway}`
