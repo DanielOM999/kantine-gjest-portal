@@ -1,12 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { db } from "@/src/lib/db"
 
+const baseUrl = 'http://192.168.1.3:3000';
+
 const getClientIp = (request: NextRequest): string => {
+  // For reverse proxy setups
   const forwardedFor = request.headers.get('x-forwarded-for')
   if (forwardedFor) {
+    // Handle comma-separated list of IPs
     const ips = forwardedFor.split(',').map(ip => ip.trim())
     return ips[0] || 'unknown'
   }
+  
+  // Fallback to other common headers
   return request.headers.get('x-real-ip') || 
          request.headers.get('cf-connecting-ip') || 
          'unknown'
@@ -16,28 +22,15 @@ const validatePhoneNumber = (rawPhone: string): string | null => {
   const cleaned = rawPhone.replace(/\D/g, '')
   return cleaned.length === 8 ? cleaned : null
 }
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
-    
-    // Extract parameters from FORM DATA only
-    const clientMac = formData.get("client_mac")?.toString()
-    const gateway = formData.get("gateway")?.toString()
-    const authToken = formData.get("auth_token")?.toString()
-    const redir = formData.get("redir")?.toString()
     const name = formData.get("name")?.toString().trim() || ''
     const rawPhone = formData.get("phone")?.toString() || ''
+    const ip = getClientIp(request)
 
-    // Validate parameters
-    if (!clientMac || !gateway || !authToken) {
-      console.error('Missing parameters:', { clientMac, gateway, authToken })
-      return NextResponse.json(
-        { error: "Mangler autentiseringsparametre" },
-        { status: 400 }
-      )
-    }
-
-    // Validate user inputs
+    // Validate inputs
     if (name.length < 2) {
       return NextResponse.json(
         { error: "Navn må inneholde minst 2 tegn" },
@@ -54,9 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Database operations
-    const ip = getClientIp(request)
     console.log(`New registration from ${ip}: ${name} (${cleanPhone})`)
-
 
     const existingUser = await db.query(
       "SELECT * FROM users WHERE phone = $1", 
@@ -79,16 +70,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const gatewayWithPort = gateway.includes(':') ? gateway : `${gateway}:2050`
-    const ndsAuthUrl = new URL(
-      `/nds/auth?token=${authToken}&client_mac=${encodeURIComponent(clientMac)}`,
-      `http://${gatewayWithPort}`
-    )
-    
-    if (redir) ndsAuthUrl.searchParams.append('redir', redir)
-
-    return NextResponse.redirect(ndsAuthUrl.toString())
-
+    return NextResponse.redirect(new URL("/success", baseUrl))
   } catch (error) {
     console.error("Registration error:", error)
     return NextResponse.json(
