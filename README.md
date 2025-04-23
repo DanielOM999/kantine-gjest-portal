@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kantine Gjest Portal
 
-## Getting Started
+[![Next.js Version](https://img.shields.io/badge/Next.js-14.2-blue?logo=next.js)](https://nextjs.org/)
+[![TypeScript Strict](https://img.shields.io/badge/TypeScript-Strict-3178C6)](https://www.typescriptlang.org/)
 
-First, run the development server:
+## 🚀 Getting Started
 
+### Prerequisites
+- Node.js 18.17+
+- npm 9+ (or yarn/pnpm/bun)
+- PostgreSQL 15+
+
+### Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/DanielOM999/kantine-gjest-portal.git
+cd kantine-gjest-portal
+npm install  # or yarn/pnpm/bun install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Setup
+1. Create `.env` file:
+```env
+DATABASE_URL="postgres://user:password@localhost:5432/dbname"
+DB_SSL="false"
+ADMIN_PASSWORD="your_secure_password"
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. Make an `.env.local` for client-side variables:
+```bash
+npm run keyGen  # generates ADMIN_HASH to place in the .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Development
+```bash
+npm run dev  # or yarn/pnpm/bun dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view the application.  
 
-## Learn More
+## 🔧 Built With
+- [Next.js 14](https://nextjs.org/) - React framework
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first styling
+- [Geist Font](https://vercel.com/font) - Optimized through next/font
 
-To learn more about Next.js, take a look at the following resources:
+## 📚 Learn More
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Interactive Next.js Tutorial](https://nextjs.org/learn)
+- [Vercel Deployment Guide](https://nextjs.org/docs/deployment)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📄 License
+MIT License - See [LICENSE.md](LICENSE.md) for details.
