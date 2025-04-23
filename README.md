@@ -3,6 +3,8 @@
 [![Next.js Version](https://img.shields.io/badge/Next.js-14.2-blue?logo=next.js)](https://nextjs.org/)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-Strict-3178C6)](https://www.typescriptlang.org/)
 
+A modern canteen management system bootstrapped with Next.js, featuring a admin panel for fishing of mobile numbers
+
 ## 🚀 Getting Started
 
 ### Prerequisites
